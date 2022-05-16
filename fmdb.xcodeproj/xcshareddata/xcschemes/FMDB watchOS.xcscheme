@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "83C73EFD1C326AB000FFC730"
+               BlueprintIdentifier = "2CD242591FCC09CA00479FDE"
                BuildableName = "FMDB.framework"
-               BlueprintName = "FMDB iOS"
+               BlueprintName = "FMDB watchOS"
                ReferencedContainer = "container:fmdb.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -43,9 +43,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "83C73EFD1C326AB000FFC730"
+            BlueprintIdentifier = "2CD242591FCC09CA00479FDE"
             BuildableName = "FMDB.framework"
-            BlueprintName = "FMDB iOS"
+            BlueprintName = "FMDB watchOS"
             ReferencedContainer = "container:fmdb.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -56,15 +56,6 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "83C73EFD1C326AB000FFC730"
-            BuildableName = "FMDB.framework"
-            BlueprintName = "FMDB iOS"
-            ReferencedContainer = "container:fmdb.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

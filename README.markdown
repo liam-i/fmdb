@@ -3,15 +3,15 @@
 [![CocoaPods Compatible](https://img.shields.io/cocoapods/v/FMDB.svg)](https://img.shields.io/cocoapods/v/FMDB.svg)
 [![Carthage Compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 
-This is an Objective-C wrapper around SQLite: http://sqlite.org/
+This is an Objective-C wrapper around [SQLite](https://sqlite.org/).
 
 ## The FMDB Mailing List:
-http://groups.google.com/group/fmdb
+https://groups.google.com/group/fmdb
 
 ## Read the SQLite FAQ:
-http://www.sqlite.org/faq.html
+https://www.sqlite.org/faq.html
 
-Since FMDB is built on top of SQLite, you're going to want to read this page top to bottom at least once.  And while you're there, make sure to bookmark the SQLite Documentation page: http://www.sqlite.org/docs.html
+Since FMDB is built on top of SQLite, you're going to want to read this page top to bottom at least once.  And while you're there, make sure to bookmark the SQLite Documentation page: https://www.sqlite.org/docs.html
 
 ## Contributing
 Do you have an awesome idea that deserves to be in FMDB?  You might consider pinging ccgus first to make sure he hasn't already ruled it out for some reason.  Otherwise pull requests are great, and make sure you stick to the local coding conventions.  However, please be patient and if you haven't heard anything from ccgus for a week or more, you might want to send a note asking what's up.
@@ -19,9 +19,6 @@ Do you have an awesome idea that deserves to be in FMDB?  You might consider pin
 ## Installing
 
 ### CocoaPods
-
-[![Dependency Status](https://www.versioneye.com/objective-c/fmdb/2.3/badge.svg?style=flat)](https://www.versioneye.com/objective-c/fmdb/2.3)
-[![Reference Status](https://www.versioneye.com/objective-c/fmdb/reference_badge.svg?style=flat)](https://www.versioneye.com/objective-c/fmdb/references)
 
 FMDB can be installed using [CocoaPods](https://cocoapods.org/).
 
@@ -74,8 +71,23 @@ $ carthage update
 
 You can then configure your project as outlined in Carthage's [Getting Started](https://github.com/Carthage/Carthage#getting-started) (i.e. for iOS, adding the framework to the "Link Binary with Libraries" in your target and adding the `copy-frameworks` script; in macOS, adding the framework to the list of "Embedded Binaries").
 
+### Swift Package Manager
+
+Declare FMDB as a package dependency.
+```swift
+.package(
+    name: "FMDB", 
+    url: "https://github.com/ccgus/fmdb", 
+    .upToNextMinor(from: "2.7.8")),
+```
+
+Use FMDB in target dependencies
+```swift
+.product(name: "FMDB", package: "FMDB")
+```
+
 ## FMDB Class Reference:
-http://ccgus.github.io/fmdb/html/index.html
+https://ccgus.github.io/fmdb/html/index.html
 
 ## Automatic Reference Counting (ARC) or Manual Memory Management?
 You can use either style in your Cocoa project.  FMDB will figure out which you are using at compile time and do the right thing.
@@ -91,13 +103,8 @@ FMDB 2.7 is largely the same as prior versions, but has been audited for nullabi
 For Swift users, this nullability audit results in changes that are not entirely backward compatible with FMDB 2.6, but is a little more Swifty. Before FMDB was audited for nullability, Swift was forced to defensively assume that variables were optional, but the library now more accurately knows which properties and method parameters are optional, and which are not.
 
 This means, though, that Swift code written for FMDB 2.7 may require changes. For example, consider the following Swift 3/Swift 4 code for FMDB 2.6:
+
 ```swift
-
-guard let queue = FMDatabaseQueue(path: fileURL.path) else {
-    print("Unable to create FMDatabaseQueue")
-    return
-}
-
 queue.inTransaction { db, rollback in
     do {
         guard let db == db else {
@@ -116,9 +123,6 @@ queue.inTransaction { db, rollback in
 Because FMDB 2.6 was not audited for nullability, Swift inferred that `db` and `rollback` were optionals. But, now, in FMDB 2.7, Swift now knows that, for example, neither `db` nor `rollback` above can be `nil`, so they are no longer optionals. Thus it becomes:
 
 ```swift
-
-let queue = FMDatabaseQueue(url: fileURL)
-
 queue.inTransaction { db, rollback in
     do {
         try db.executeUpdate("INSERT INTO foo (bar) VALUES (?)", values: [1])
@@ -187,10 +191,10 @@ There are three main classes in FMDB:
 An `FMDatabase` is created with a path to a SQLite database file.  This path can be one of these three:
 
 1. A file system path.  The file does not have to exist on disk.  If it does not exist, it is created for you.
-2. An empty string (`@""`).  An empty database is created at a temporary location.  This database is deleted with the `FMDatabase` connection is closed.
-3. `NULL`.  An in-memory database is created.  This database will be destroyed with the `FMDatabase` connection is closed.
+2. An empty string (`@""`).  An empty database is created at a temporary location.  This database is deleted when the `FMDatabase` connection is closed.
+3. `NULL`.  An in-memory database is created.  This database will be destroyed when the `FMDatabase` connection is closed.
 
-(For more information on temporary and in-memory databases, read the sqlite documentation on the subject: http://www.sqlite.org/inmemorydb.html)
+(For more information on temporary and in-memory databases, read the sqlite documentation on the subject: https://www.sqlite.org/inmemorydb.html)
 
 ```objc
 NSString *path = [NSTemporaryDirectory() stringByAppendingPathComponent:@"tmp.db"];
@@ -237,6 +241,7 @@ FMResultSet *s = [db executeQuery:@"SELECT COUNT(*) FROM myTable"];
 if ([s next]) {
     int totalCount = [s intForColumnIndex:0];
 }
+[s close];  // Call the -close method on the FMResultSet if you cannot confirm whether the result set is exhausted.
 ```
 
 `FMResultSet` has many methods to retrieve data in an appropriate format:
@@ -255,7 +260,7 @@ if ([s next]) {
 
 Each of these methods also has a `{type}ForColumnIndex:` variant that is used to retrieve the data based on the position of the column in the results, as opposed to the column's name.
 
-Typically, there's no need to `-close` an `FMResultSet` yourself, since that happens when either the result set is deallocated, or the parent database is closed.
+Typically, there's no need to `-close` an `FMResultSet` yourself, since that happens when either the result set is exhausted. However, if you only pull out a single request or any other number of requests which don't exhaust the result set, you will need to call the `-close` method on the `FMResultSet`.
 
 ### Closing
 
@@ -444,7 +449,7 @@ To do this, you must:
 
 1. Copy the relevant `.m` and `.h` files from the FMDB `src` folder into your project.
 
- You can copy all of them (which is easiest), or only the ones you need. Likely you will need [`FMDatabase`](http://ccgus.github.io/fmdb/html/Classes/FMDatabase.html) and [`FMResultSet`](http://ccgus.github.io/fmdb/html/Classes/FMResultSet.html) at a minimum. [`FMDatabaseAdditions`](http://ccgus.github.io/fmdb/html/Categories/FMDatabase+FMDatabaseAdditions.html) provides some very useful convenience methods, so you will likely want that, too. If you are doing multithreaded access to a database, [`FMDatabaseQueue`](http://ccgus.github.io/fmdb/html/Classes/FMDatabaseQueue.html) is quite useful, too. If you choose to not copy all of the files from the `src` directory, though, you may want to update `FMDB.h` to only reference the files that you included in your project.
+ You can copy all of them (which is easiest), or only the ones you need. Likely you will need [`FMDatabase`](https://ccgus.github.io/fmdb/html/Classes/FMDatabase.html) and [`FMResultSet`](https://ccgus.github.io/fmdb/html/Classes/FMResultSet.html) at a minimum. [`FMDatabaseAdditions`](https://ccgus.github.io/fmdb/html/Categories/FMDatabase+FMDatabaseAdditions.html) provides some very useful convenience methods, so you will likely want that, too. If you are doing multithreaded access to a database, [`FMDatabaseQueue`](https://ccgus.github.io/fmdb/html/Classes/FMDatabaseQueue.html) is quite useful, too. If you choose to not copy all of the files from the `src` directory, though, you may want to update `FMDB.h` to only reference the files that you included in your project.
 
  Note, if you're copying all of the files from the `src` folder into to your project (which is recommended), you may want to drag the individual files into your project, not the folder, itself, because if you drag the folder, you won't be prompted to add the bridging header (see next point).
 
@@ -463,7 +468,7 @@ If you do the above, you can then write Swift code that uses `FMDatabase`. For e
 
 ```swift
 let fileURL = try! FileManager.default
-    .url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+    .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
     .appendingPathComponent("test.sqlite")
 
 let database = FMDatabase(url: fileURL)
